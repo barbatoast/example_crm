@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 import Url exposing (Url)
 import Route
 import Route exposing (Route(..))
-import Api exposing (Firm, Lawyer, getFirms, getLawyers, PagedFirms, PagedLawyers)
+import Api exposing (Firm, getFirms, getLawyers)
 import Http
 
 

@@ -1,7 +1,7 @@
 module Route exposing (Route(..), parse, toUrl)
 
 import Url exposing (Url)
-import Url.Parser exposing (Parser, (</>), int, map, oneOf, s)
+import Url.Parser exposing (Parser, (</>), map, oneOf, s)
 import Url.Parser as Parser
 
 
