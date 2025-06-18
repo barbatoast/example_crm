@@ -10,7 +10,7 @@ import Url.Parser as Parser
 type Route
     = Firms
     | Lawyers
-    | LawyerDetail Int
+    | LawyerDetail String
     | Acceptances
     | Login
     | NotFound
@@ -21,7 +21,7 @@ type Route
 routeParser : Parser (Route -> a) a
 routeParser =
     oneOf
-        [ map LawyerDetail (s "lawyers" </> int)
+        [ map LawyerDetail (s "lawyers" </> Parser.string)
         , map Lawyers (s "lawyers")
         , map Firms (s "firms")
         , map Firms (s "home")
@@ -53,7 +53,7 @@ toUrl route =
     case route of
         Firms -> "#/home"
         Lawyers -> "#/lawyers"
-        LawyerDetail id -> "#/lawyers/" ++ String.fromInt id
+        LawyerDetail id -> "#/lawyers/" ++ id
         Acceptances -> "#/acceptances"
         Login -> "#/login"
         NotFound -> "#/404"
