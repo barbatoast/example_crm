@@ -28,6 +28,8 @@ type alias Model =
     , route : Route
     , firms : Paginated Api.Firm
     , lawyers : Paginated Api.Lawyer
+    , showAddFirmModal : Bool
+    , newFirmName : String
     }
 
 
@@ -62,6 +64,8 @@ init _ url key =
       , route = route
       , firms = initPaginated
       , lawyers = initPaginated
+      , showAddFirmModal = False
+      , newFirmName = ""
       }
     , initialCmd
     )
@@ -76,6 +80,11 @@ type Msg
     | LoadPrevLawyerPage
     | UrlChanged Url
     | LinkClicked Browser.UrlRequest
+    | ShowAddFirmModal
+    | HideAddFirmModal
+    | UpdateNewFirmName String
+    | SubmitNewFirm
+    | FirmCreated (Result Http.Error Api.Firm)
 
 
 -- UPDATE
@@ -173,7 +182,6 @@ update msg model =
             , getFirms prevPage model.firms.pageSize GotFirms
             )
 
-        -- TODO: implement lawyer pagination when needed
         GotLawyers (Ok { users, totalPages }) ->
             ( { model
                 | lawyers =
@@ -239,6 +247,26 @@ update msg model =
             , getLawyers prevPage model.lawyers.pageSize GotLawyers
             )
 
+        ShowAddFirmModal ->
+            ( { model | showAddFirmModal = True }, Cmd.none )
+
+        HideAddFirmModal ->
+            ( { model | showAddFirmModal = False, newFirmName = "" }, Cmd.none )
+
+        UpdateNewFirmName name ->
+            ( { model | newFirmName = name }, Cmd.none )
+
+        SubmitNewFirm ->
+            ( model, Api.postFirm model.newFirmName FirmCreated )
+
+        FirmCreated (Ok _) ->
+            ( { model | showAddFirmModal = False, newFirmName = "" }
+            , getFirms model.firms.page model.firms.pageSize GotFirms
+            )
+
+        FirmCreated (Err _) ->
+            ( { model | showAddFirmModal = False, newFirmName = "" }, Cmd.none )
+
 
 -- VIEW
 
@@ -253,7 +281,30 @@ layout model =
     div [ class "container" ]
         [ asideView model.route
         , div [ attribute "role" "main", class "main" ] [ viewRoute model ]
+        , modalView model
         ]
+
+
+modalView : Model -> Html Msg
+modalView model =
+    if model.showAddFirmModal then
+        div [ class "modal-overlay" ]
+            [ div [ class "modal" ]
+                [ h2 [] [ text "Add Law Firm" ]
+                , Html.input
+                    [ Html.Attributes.placeholder "Firm Name"
+                    , Html.Attributes.value model.newFirmName
+                    , Html.Events.onInput UpdateNewFirmName
+                    ]
+                    []
+                , div [ class "modal-buttons" ]
+                    [ button [ onClick SubmitNewFirm ] [ text "Submit" ]
+                    , button [ onClick HideAddFirmModal ] [ text "Cancel" ]
+                    ]
+                ]
+            ]
+    else
+        text ""
 
 
 asideView : Route -> Html Msg
@@ -412,12 +463,10 @@ headerView titleText =
         [ h2 [] [ text titleText ] ]
 
 
-buttonsView : Html msg
+buttonsView : Html Msg
 buttonsView =
     div [ class "buttons" ]
-        [ button [] [ text "Edit" ]
-        , button [] [ text "Add Firm" ]
-        ]
+        [ button [ onClick ShowAddFirmModal ] [ text "Add Firm" ] ]
 
 
 -- MAIN

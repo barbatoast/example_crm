@@ -1,7 +1,8 @@
-module Api exposing (Firm, Lawyer, PagedFirms, PagedLawyers, getFirms, getLawyers)
+module Api exposing (Firm, Lawyer, PagedFirms, PagedLawyers, getFirms, getLawyers, postFirm)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode
 
 -- MODEL
 
@@ -73,4 +74,17 @@ getLawyers page limit toMsg =
     Http.get
         { url = "http://127.0.0.1:5000/users?page=" ++ String.fromInt page ++ "&limit=" ++ String.fromInt limit
         , expect = Http.expectJson toMsg pagedLawyersDecoder
+        }
+
+-- Post Firm
+
+postFirm : String -> (Result Http.Error Firm -> msg) -> Cmd msg
+postFirm name toMsg =
+    let
+        body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ) ]
+    in
+    Http.post
+        { url = "http://127.0.0.1:5000/firm/add"
+        , body = body
+        , expect = Http.expectJson toMsg firmDecoder
         }
