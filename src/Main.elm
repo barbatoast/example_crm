@@ -384,7 +384,7 @@ viewRoute model =
                     ]
                 ]
 
-        LawyerDetail id ->
+        LawyerDetail _ ->
             case model.selectedLawyer of
                 Just lawyer ->
                     div []
