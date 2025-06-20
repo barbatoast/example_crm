@@ -1,4 +1,14 @@
-module Api exposing (Firm, Lawyer, PagedFirms, PagedLawyers, getFirms, getLawyers, postFirm)
+module Api exposing
+    ( Firm
+    , Lawyer
+    , LawyerDetail
+    , PagedFirms
+    , PagedLawyers
+    , getFirms
+    , getLawyers
+    , getLawyerDetail
+    , postFirm
+    )
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -87,4 +97,26 @@ postFirm name toMsg =
         { url = "http://127.0.0.1:5000/firm/add"
         , body = body
         , expect = Http.expectJson toMsg firmDecoder
+        }
+
+-- Lawyer Detail
+
+type alias LawyerDetail =
+    { name : String
+    , email : String
+    , isAppUser : Bool
+    }
+
+lawyerDetailDecoder : Decode.Decoder LawyerDetail
+lawyerDetailDecoder =
+    Decode.map3 LawyerDetail
+        (Decode.field "name" Decode.string)
+        (Decode.field "email" Decode.string)
+        (Decode.field "isAppUser" Decode.bool)
+
+getLawyerDetail : String -> (Result Http.Error LawyerDetail -> msg) -> Cmd msg
+getLawyerDetail id toMsg =
+    Http.get
+        { url = "http://127.0.0.1:5000/users/" ++ id
+        , expect = Http.expectJson toMsg lawyerDetailDecoder
         }

@@ -30,6 +30,7 @@ type alias Model =
     , lawyers : Paginated Api.Lawyer
     , showAddFirmModal : Bool
     , newFirmName : String
+    , selectedLawyer : Maybe Api.LawyerDetail
     }
 
 
@@ -57,6 +58,9 @@ init _ url key =
                 Lawyers ->
                     getLawyers 1 10 GotLawyers
 
+                LawyerDetail id ->
+                    Api.getLawyerDetail id GotLawyerDetail
+
                 _ ->
                     Cmd.none
     in
@@ -66,6 +70,7 @@ init _ url key =
       , lawyers = initPaginated
       , showAddFirmModal = False
       , newFirmName = ""
+      , selectedLawyer = Nothing
       }
     , initialCmd
     )
@@ -85,6 +90,7 @@ type Msg
     | UpdateNewFirmName String
     | SubmitNewFirm
     | FirmCreated (Result Http.Error Api.Firm)
+    | GotLawyerDetail (Result Http.Error Api.LawyerDetail)
 
 
 -- UPDATE
@@ -111,6 +117,9 @@ update msg model =
 
                         Lawyers ->
                             getLawyers model.lawyers.page model.lawyers.pageSize GotLawyers
+                        
+                        LawyerDetail id ->
+                            Api.getLawyerDetail id GotLawyerDetail
 
                         _ ->
                             Cmd.none
@@ -267,6 +276,12 @@ update msg model =
         FirmCreated (Err _) ->
             ( { model | showAddFirmModal = False, newFirmName = "" }, Cmd.none )
 
+        GotLawyerDetail (Ok lawyer) ->
+            ( { model | selectedLawyer = Just lawyer }, Cmd.none )
+
+        GotLawyerDetail (Err _) ->
+            ( { model | selectedLawyer = Nothing }, Cmd.none )
+
 
 -- VIEW
 
@@ -370,25 +385,30 @@ viewRoute model =
                 ]
 
         LawyerDetail id ->
-            div []
-                [ headerView ("Lawyer #" ++ id)
-                , table []
-                    [ thead []
-                        [ tr []
-                            [ th [] [ text "Name" ]
-                            , th [] [ text "Email" ]
-                            , th [] [ text "App User?"]
+            case model.selectedLawyer of
+                Just lawyer ->
+                    div []
+                        [ headerView ("Lawyer: " ++ lawyer.name)
+                        , table []
+                            [ thead []
+                                [ tr []
+                                    [ th [] [ text "Name" ]
+                                    , th [] [ text "Email" ]
+                                    , th [] [ text "App User?" ]
+                                    ]
+                                ]
+                            , tbody []
+                                [ tr []
+                                    [ td [] [ text lawyer.name ]
+                                    , td [] [ text lawyer.email ]
+                                    , td [] [ text (if lawyer.isAppUser then "✔" else "✘") ]
+                                    ]
+                                ]
                             ]
                         ]
-                    , tbody []
-                        [ tr []
-                            [ td [] [ text "John Doe"]
-                            , td [] [ text "john.doe@gmail.com" ]
-                            , td [] [ text "✔"]
-                            ]
-                        ]
-                    ]
-                ]
+
+                Nothing ->
+                    div [] [ text "Loading lawyer details..." ]
 
         Acceptances ->
             div []
