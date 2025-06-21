@@ -364,7 +364,7 @@ viewRoute model =
                     [ thead []
                         [ tr []
                             [ th [] [ text "Name" ]
-                            , th [] [ text "Specialty" ]
+                            , th [] [ text "Email" ]
                             ]
                         ]
                     , tbody [] (List.map lawyerRow model.lawyers.items)
@@ -432,7 +432,13 @@ viewRoute model =
 lawyerRow : Api.Lawyer -> Html msg
 lawyerRow lawyer =
     tr []
-        [ td [] [ a [ href ("#/lawyers/" ++ lawyer.id) ] [ text lawyer.name ] ]
+        [ td []
+            [ a
+                [ href ("#/lawyers/" ++ lawyer.id)
+                , class "lawyer-link"
+                ]
+                [ text lawyer.name ]
+            ]
         , td [] [ text lawyer.email ]
         ]
 
